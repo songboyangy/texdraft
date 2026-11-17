@@ -3,11 +3,12 @@
 <p align="center"><b>The paper workspace for the agent era.</b></p>
 
 <p align="center">
-A collaborative LaTeX editor where AI agents work on your paper the way a co-author would.<br>
+An open-source, collaborative <b>AI LaTeX editor</b> where agents such as <b>Claude Code</b>, <b>Codex</b> and <b>ChatGPT</b> work on your paper the way a co-author would.<br>
 They read the whole project, make the edits, compile, read the errors and fix them, while you watch.
 </p>
 
 <p align="center">
+<img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20ChatGPT%20%7C%20Claude-black" alt="Works with Claude Code, Codex, ChatGPT and Claude">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
 <img src="https://img.shields.io/badge/self--hosted-Docker-2496ED" alt="Self-hosted with Docker">
 <img src="https://img.shields.io/badge/MCP-33%20tools-8A2BE2" alt="MCP: 33 tools">

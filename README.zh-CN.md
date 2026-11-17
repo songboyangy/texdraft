@@ -3,11 +3,12 @@
 <p align="center"><b>Agent 时代的论文工作台</b></p>
 
 <p align="center">
-一个可多人协作的 LaTeX 编辑器。AI Agent 在这里像合作者一样改你的论文：<br>
+一个开源、可多人协作的 <b>AI LaTeX 编辑器</b>。<b>Claude Code</b>、<b>Codex</b>、<b>ChatGPT</b> 等 AI Agent 在这里像合作者一样改你的论文：<br>
 通读整个项目、动手修改、编译、看报错、再修好，全程你都看得到。
 </p>
 
 <p align="center">
+<img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20Codex%20%7C%20ChatGPT%20%7C%20Claude-black" alt="支持 Claude Code、Codex、ChatGPT 和 Claude">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
 <img src="https://img.shields.io/badge/self--hosted-Docker-2496ED" alt="Docker 私有化部署">
 <img src="https://img.shields.io/badge/MCP-33%20tools-8A2BE2" alt="MCP：33 个工具">

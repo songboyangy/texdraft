@@ -1,7 +1,7 @@
 {
   "name": "texdraft",
   "private": true,
-  "description": "Self-hosted collaborative LaTeX editor with an AI agent and an MCP server",
+  "description": "Open-source AI LaTeX editor: Claude Code, Codex, ChatGPT and other AI agents edit, compile and fix your paper. Collaborative, self-hosted, with an MCP server",
   "engines": {
     "node": ">=22"
   },
