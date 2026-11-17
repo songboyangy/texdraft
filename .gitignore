@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.devdata/
+# 运行时数据（只忽略仓库根目录的 data/，不要误伤源码里的 data 目录）
+/data/
+*.log
+!apps/server/src/__fixtures__/*.log
+# Lezer 生成的解析器（由 apps/web/scripts/build-lezer.mjs 生成）
+apps/web/src/lib/overleaf/features/source-editor/lezer-latex/latex.mjs
+apps/web/src/lib/overleaf/features/source-editor/lezer-latex/latex.terms.mjs
+.env.production
+# 内部运维文档（含服务器信息，不进公开仓库）
+/internal/

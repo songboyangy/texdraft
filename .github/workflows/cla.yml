@@ -1,0 +1,45 @@
+name: CLA
+
+# Asks first-time contributors to sign CLA.md and records signatures in signatures/cla.json
+# (on the default branch, which must not require pull requests for the bot's commits).
+# Runs on pull_request_target without checking out the PR's code, so untrusted code never runs
+# with these permissions.
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, closed, synchronize]
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  cla:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event.issue.pull_request &&
+        (github.event.comment.body == 'recheck' ||
+         github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA'))
+    steps:
+      # contributor-assistant/github-action v2.6.1, pinned by commit
+      - uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-signatures: signatures/cla.json
+          path-to-document: https://github.com/${{ github.repository }}/blob/main/CLA.md
+          branch: main
+          allowlist: songboyangy,dependabot[bot],renovate[bot]
+          create-file-commit-message: 'CLA: create signatures file'
+          signed-commit-message: 'CLA: $contributorName signed in #$pullRequestNo'
+          custom-notsigned-prcomment: >-
+            Thanks for your contribution! Before we can merge it, please read the
+            [Contributor License Agreement](https://github.com/${{ github.repository }}/blob/main/CLA.md)
+            and sign it by commenting below. You only need to do this once.
+            / 感谢贡献！合并前请阅读[贡献者许可协议](https://github.com/${{ github.repository }}/blob/main/CLA.md)，
+            并在下方回复下面这句话签署（只需一次）。
+          custom-allsigned-prcomment: All contributors have signed the CLA. / 所有贡献者都已签署 CLA。

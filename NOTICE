@@ -1,0 +1,54 @@
+TeXdraft
+Copyright (C) 2026 TeXdraft contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License version 3 as published by
+the Free Software Foundation. See LICENSE for the full text.
+
+Third-party material
+--------------------
+apps/web/src/lib/overleaf/features/source-editor/languages/latex/completions/data/*
+  LaTeX completion data (command snippets with usage scores, environment
+  templates, package / class / bibliography style names) copied from Overleaf
+  (https://github.com/overleaf/overleaf, commit e039ad26c5bf5422eb57b89fc7e57c75055e631d).
+  Copyright (C) Overleaf. Licensed under the GNU AGPL v3.
+
+apps/web/src/lib/latexCompletion.ts
+  The completion behaviour (environment snippets offered as "\begin{env} …"
+  command completions, "$1" placeholder conversion, extending over an unpaired
+  closing brace) follows Overleaf's source-editor implementation.
+
+apps/web/src/lib/overleaf/features/**
+  Overleaf's CodeMirror 6 LaTeX language support, copied from
+  services/web/frontend/js/features/** at the same commit, keeping Overleaf's
+  directory layout so the original "@/..." imports resolve unchanged:
+    - lezer-latex/latex.grammar, lezer-latex/tokens.mjs (Lezer LaTeX grammar;
+      the parser is generated at build time by apps/web/scripts/build-lezer.mjs)
+    - languages/latex/latex-language.ts (highlighting, folding, node groups)
+    - languages/latex/linter/* (real-time LaTeX linter running in a Web Worker)
+    - utils/tree-operations/*, utils/tree-query.ts, utils/range.ts, utils/node-props.ts
+  Copyright (C) Overleaf. Licensed under the GNU AGPL v3.
+  Local modifications (marked "TeXdraft 修改" in the file headers):
+    - languages/latex/close-bracket-config.ts: reduced to the standard
+      @codemirror/autocomplete config (Overleaf relies on a forked package).
+    - languages/latex/linter/latex-linter.ts: removed a webpack magic comment so
+      Vite can bundle the worker.
+    - commands/ranges.ts, extensions/toolbar/{commands,lists,sections,snippets}.ts,
+      utils/tree-operations/formatting.ts, languages/latex/snippets.ts (formatting toolbar)
+    - word-count-modal/{utils,components/word-count-data.ts}, utils/walk-included-files.ts
+      (client-side word count with Intl.Segmenter, used for Chinese)
+    - languages/latex/completions/data/* (completion data, see above)
+  Stubs written for TeXdraft (not Overleaf code): extensions/annotations.ts,
+  extensions/figure-modal.ts, extensions/visual/visual.ts, ide-react/context/outline-context.ts,
+  infrastructure/{event-tracking,project-snapshot}.ts, features/event-tracking/search-events.ts,
+  utils/debugging.ts, shims/o-error.ts.
+
+apps/web/src/lib/mathPreview.ts
+  Math preview tooltip modelled on Overleaf's extensions/math-preview.ts, rendered
+  with KaTeX instead of MathJax.
+
+Design references (no code copied)
+----------------------------------
+The selection AI menu, citation search and version history UX were informed by
+Litewrite (https://github.com/HKUDS/Litewrite, AGPL-3.0); TeXdraft's implementations
+are original.

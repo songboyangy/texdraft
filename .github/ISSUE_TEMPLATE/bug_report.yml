@@ -1,0 +1,46 @@
+name: Bug report / 问题反馈
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / 发生了什么
+      description: Include error messages, compile logs or screenshots if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      placeholder: |
+        1. …
+        2. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour / 期望结果
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      placeholder: e.g. main @ abc1234
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment / 部署方式
+      options:
+        - Docker Compose
+        - scripts/prod.sh
+        - Development (pnpm dev)
+        - Other
+  - type: input
+    id: compile
+    attributes:
+      label: Compile runner, sandbox and AI provider
+      placeholder: e.g. local-tectonic + bwrap, DeepSeek (compatible)
+  - type: markdown
+    attributes:
+      value: "Security issues: please report privately, see SECURITY.md. 安全问题请私下报告，见 SECURITY.md。"

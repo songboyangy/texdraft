@@ -1,0 +1,28 @@
+{
+  "name": "texdraft",
+  "private": true,
+  "description": "Self-hosted collaborative LaTeX editor with an AI agent and an MCP server",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"pnpm --filter @texdraft/server dev\" \"pnpm --filter @texdraft/web dev\"",
+    "build": "pnpm --filter @texdraft/web build",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @texdraft/server db:generate",
+    "db:migrate": "pnpm --filter @texdraft/server db:migrate",
+    "services:start": "bash scripts/dev-services.sh start",
+    "services:stop": "bash scripts/dev-services.sh stop",
+    "prod": "bash scripts/prod.sh",
+    "dev:poll": "concurrently -n server,web -c blue,green \"pnpm --filter @texdraft/server start\" \"VITE_POLL=1 pnpm --filter @texdraft/web dev\"",
+    "test": "pnpm -r test",
+    "test:e2e": "node scripts/e2e/collab.mjs && node scripts/e2e/agent.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "typescript": "^5.9.0",
+    "ws": "^8.22.1"
+  },
+  "license": "AGPL-3.0-only"
+}

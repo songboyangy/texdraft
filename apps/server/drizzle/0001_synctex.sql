@@ -1,0 +1,1 @@
+ALTER TABLE "compile_jobs" ADD COLUMN "synctex_key" text;

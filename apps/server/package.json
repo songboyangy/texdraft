@@ -1,0 +1,42 @@
+{
+  "name": "@texdraft/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../../.env src/index.ts",
+    "start": "tsx --env-file=../../.env src/index.ts",
+    "typecheck": "tsc -p .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file=../../.env src/db/migrate.ts",
+    "test": "tsx --env-file=../../.env --test 'src/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/multipart": "^10.1.7",
+    "@fastify/static": "^10.1.8",
+    "@fastify/websocket": "^11.3.6",
+    "@hocuspocus/extension-database": "^4.8.0",
+    "@hocuspocus/server": "^4.8.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@napi-rs/canvas": "1.1.0",
+    "@texdraft/shared": "workspace:^",
+    "diff": "^9.0.0",
+    "drizzle-orm": "^0.45.4",
+    "fastify": "^5.12.8",
+    "fflate": "^0.8.3",
+    "pdfjs-dist": "6.5.438",
+    "picomatch": "^4.0.7",
+    "postgres": "^4.0.0",
+    "yjs": "^13.6.33",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/picomatch": "^4.0.3",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0"
+  },
+  "license": "AGPL-3.0-only"
+}

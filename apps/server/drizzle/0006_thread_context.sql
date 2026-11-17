@@ -1,0 +1,1 @@
+ALTER TABLE "chat_threads" ADD COLUMN "context" jsonb DEFAULT '{}'::jsonb NOT NULL;

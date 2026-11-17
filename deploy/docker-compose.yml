@@ -1,0 +1,51 @@
+# TeXdraft 一键部署：PostgreSQL + TeXdraft（含 TeX Live）
+#   cp deploy/.env.example deploy/.env   # 填写密码、密钥与 AI 配置
+#   docker compose -f deploy/docker-compose.yml up -d --build
+# Existing installs from before the rename (TexPilot) keep their data by setting, in deploy/.env:
+#   COMPOSE_PROJECT_NAME=texpilot  POSTGRES_USER=texpilot  POSTGRES_DB=texpilot
+# (volumes are prefixed with the project name; a different name means a new, empty database)
+name: ${COMPOSE_PROJECT_NAME:-texdraft}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-texdraft}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-texdraft}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: texdraft:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-texdraft}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-texdraft}
+      # empty: generated on first start and kept in the data volume
+      SESSION_SECRET: ${SESSION_SECRET:-}
+    ports:
+      - "${TEXDRAFT_BIND:-127.0.0.1}:${TEXDRAFT_PORT:-8787}:8787"
+    volumes:
+      - data:/data
+    # 服务以容器内 root 运行，只保留切换到编译用户、管理其输出目录所需的能力
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETUID, SETGID, KILL]
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  pgdata:
+  data:

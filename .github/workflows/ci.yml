@@ -1,0 +1,180 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Typecheck, unit and end-to-end tests (bubblewrap sandbox)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: texdraft
+          POSTGRES_PASSWORD: texdraft
+          POSTGRES_DB: texdraft
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U texdraft" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://texdraft:texdraft@127.0.0.1:5432/texdraft
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Configure
+        run: |
+          cp .env.example .env
+          {
+            echo "DATABASE_URL=$DATABASE_URL"
+            echo "SESSION_SECRET=ci-secret-$(openssl rand -hex 16)"
+            echo "COMPILE_RUNNER=local-tectonic"
+            echo "COMPILE_SANDBOX=bwrap"
+            echo "ANTHROPIC_BASE_URL=http://127.0.0.1:8790"
+            echo "ANTHROPIC_API_KEY=test"
+          } >> .env
+
+      - run: pnpm typecheck
+      - run: pnpm test
+
+      - name: Install tectonic and bubblewrap
+        run: |
+          sudo apt-get update && sudo apt-get install -y bubblewrap
+          # Ubuntu 24.04 默认用 AppArmor 限制非特权用户命名空间，bubblewrap 需要放开
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+          sudo mv tectonic /usr/local/bin/
+          tectonic --version
+
+      - name: Start server
+        run: |
+          node scripts/e2e/mock-anthropic.mjs > mock.log 2>&1 &
+          pnpm --filter @texdraft/server start > server.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          grep "\[compile\]" server.log
+          grep -q "compile sandbox: bubblewrap" server.log
+
+      - run: node scripts/e2e/seed.mjs
+      - run: node scripts/e2e/accounts.mjs
+      - run: node scripts/e2e/collab.mjs
+      - run: node scripts/e2e/edit-log.mjs
+      - run: node scripts/e2e/bridge.mjs
+      - run: node scripts/e2e/seed.mjs && node scripts/e2e/agent.mjs
+      - run: node scripts/e2e/agent-tools.mjs
+      - run: node scripts/e2e/ai-settings.mjs
+      - run: node scripts/e2e/mcp.mjs
+      - run: CIMD=0 node scripts/e2e/oauth.mjs
+      - run: URL_UPLOAD=0 node scripts/e2e/mcp-more.mjs
+      - run: node scripts/e2e/mcp-paper.mjs
+      - run: node scripts/e2e/mcp-patch-concurrency.mjs
+      - run: node scripts/e2e/folders.mjs
+      - run: node scripts/e2e/tags.mjs
+      - run: node scripts/e2e/compile-sandbox.mjs
+
+      - name: Agent with an OpenAI-compatible provider
+        run: |
+          pkill -f "src/index.ts" || true
+          sleep 2
+          AGENT_PROVIDER=openai OPENAI_BASE_URL=http://127.0.0.1:8790/v1 OPENAI_API_KEY=test AGENT_MODEL=gpt-test AGENT_VISION=true \
+            pnpm --filter @texdraft/server start > server-openai.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          node scripts/e2e/seed.mjs
+          PROVIDER=openai node scripts/e2e/agent.mjs
+          PROVIDER=openai node scripts/e2e/agent-tools.mjs
+
+      - name: Agent context management (small context window)
+        run: |
+          pkill -f "src/index.ts" || true
+          sleep 2
+          AGENT_CONTEXT_WINDOW=24000 pnpm --filter @texdraft/server start > server-context.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          node scripts/e2e/agent-context.mjs
+
+      - name: Server plugins (TEXDRAFT_PLUGINS, quota provider)
+        run: |
+          pkill -f "src/index.ts" || true
+          sleep 2
+          TEXDRAFT_PLUGINS=$GITHUB_WORKSPACE/scripts/e2e/fixtures/quota-plugin.mjs pnpm --filter @texdraft/server start > server-plugins.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          grep -q "quota provider: test-plan" server-plugins.log
+          node scripts/e2e/plugins.mjs
+
+      - name: Public demo mode (quotas, compile queue, Turnstile test keys)
+        run: |
+          pkill -f "src/index.ts" || true
+          sleep 2
+          DEMO_ENV="PUBLIC_DEMO=true SOURCE_URL=https://example.com/texdraft COMPILE_CONCURRENCY=1 COMPILES_PER_MINUTE=3 MAX_PROJECTS_PER_USER=3 MAX_PROJECT_BYTES=300000 REGISTRATIONS_PER_IP_PER_DAY=2 ALLOW_LOCAL_AGENT_SETUP=true"
+          env $DEMO_ENV pnpm --filter @texdraft/server start > server-demo.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          node scripts/e2e/public-demo.mjs
+          pkill -f "src/index.ts" || true
+          sleep 2
+          # Cloudflare Turnstile test keys: secret 1x… always passes, 2x… always fails
+          env $DEMO_ENV TURNSTILE_SITE_KEY=1x00000000000000000000AA TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA \
+            pnpm --filter @texdraft/server start >> server-demo.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          TURNSTILE=pass node scripts/e2e/public-demo.mjs
+          pkill -f "src/index.ts" || true
+          sleep 2
+          env $DEMO_ENV TURNSTILE_SITE_KEY=1x00000000000000000000AA TURNSTILE_SECRET_KEY=2x0000000000000000000000000000000AA \
+            pnpm --filter @texdraft/server start >> server-demo.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/api/health && break; sleep 1; done
+          TURNSTILE=fail node scripts/e2e/public-demo.mjs
+
+      - name: Server log
+        if: always()
+        run: tail -n 200 server.log server-openai.log server-context.log server-plugins.log server-demo.log 2>/dev/null || true
+
+  docker:
+    name: Docker image and compose (uid sandbox, TeX Live)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          # 这个任务不装 pnpm：关闭 v5 根据 packageManager 字段自动开启的依赖缓存
+          package-manager-cache: false
+      - name: Configure
+        run: |
+          cp deploy/.env.example deploy/.env
+          sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(openssl rand -hex 24)/" deploy/.env
+          # SESSION_SECRET stays empty: the server generates one in the data volume
+      - name: Build and start
+        run: |
+          docker compose -f deploy/docker-compose.yml up -d --build --wait --wait-timeout 300
+          docker compose -f deploy/docker-compose.yml ps
+      - name: Sandbox reported
+        run: |
+          docker compose -f deploy/docker-compose.yml logs app | grep "compile sandbox: unprivileged user 1001:1001"
+      - name: Compile user cannot read server secrets
+        run: |
+          C="docker compose -f deploy/docker-compose.yml exec -T"
+          ! $C -u 1001 app cat /proc/1/environ
+          ! $C -u 1001 app ls /data/blobs
+          $C app test -s /data/session-secret
+          ! $C -u 1001 app cat /data/session-secret
+          echo "isolation OK"
+      - run: node scripts/e2e/seed.mjs
+      - run: node scripts/e2e/mcp-paper.mjs
+      - name: Compile sandbox probes (inside container)
+        run: |
+          docker compose -f deploy/docker-compose.yml exec -T app sh -c 'echo CANARYXYZZY > /data/blobs/canary.tex'
+          ENV_PROBE=/proc/1/environ CANARY_PATH=/data/blobs/canary.tex CANARY_WRITE=0 node scripts/e2e/compile-sandbox.mjs
+      - name: Logs
+        if: always()
+        run: docker compose -f deploy/docker-compose.yml logs --tail 200
