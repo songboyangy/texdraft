@@ -9,7 +9,7 @@ import { Avatar, Dropdown, MenuDivider, MenuItem, MenuLabel } from './ui';
 
 /** 右上角用户菜单：语言、编辑器偏好、退出 */
 export function UserMenu({ showEditorSettings = false }: { showEditorSettings?: boolean }) {
-  const { user, setUser } = useUser();
+  const { user } = useUser();
   const { locale, setLocale, t } = useI18n();
   const settings = useSettings();
   const idx = FONT_SIZES.indexOf(settings.editorFontSize);
@@ -88,7 +88,8 @@ export function UserMenu({ showEditorSettings = false }: { showEditorSettings?: 
             icon={LogOut}
             onClick={() => {
               close();
-              api.logout().then(() => setUser(null));
+              // Reload / so the server decides what a signed-out visitor sees (the product page on the hosted demo)
+              api.logout().catch(() => undefined).then(() => window.location.assign('/'));
             }}
           >
             {t('auth.logout')}
