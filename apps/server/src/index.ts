@@ -70,6 +70,13 @@ app.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, body,
   }
 });
 
+// Body-less POST/DELETE (logout, delete, stop/undo an AI run) reach us through Cloudflare Tunnel as an empty
+// chunked body with no Content-Type, which Fastify rejects with 415. Accept empty bodies; anything with content still needs a type.
+app.addContentTypeParser('*', { parseAs: 'buffer' }, (_req, body, done) => {
+  if ((body as Buffer).length === 0) return done(null, {});
+  done(new HttpError(415, 'Unsupported Media Type'), undefined);
+});
+
 // OAuth 令牌端点与授权表单使用 application/x-www-form-urlencoded
 app.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'string', bodyLimit: 64 * 1024 }, (_req, body, done) => {
   done(null, Object.fromEntries(new URLSearchParams(body as string)));
