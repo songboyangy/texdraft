@@ -25,13 +25,15 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   });
   const text = await res.text();
   let data: { error?: string } | null = null;
+  let invalidJson = false;
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
-    /* 非 JSON（如代理返回的 HTML 错误页） */
+    /* 非 JSON（如代理返回的 HTML 错误页）；合法 JSON null 不属于解析失败 */
+    invalidJson = true;
   }
   if (!res.ok) throw new ApiError(res.status, data?.error ?? (zh ? `请求失败（${res.status}）` : `Request failed (${res.status})`));
-  if (data === null && text) throw new ApiError(res.status, zh ? '服务器返回了无法识别的内容' : 'Unexpected response from the server');
+  if (invalidJson) throw new ApiError(res.status, zh ? '服务器返回了无法识别的内容' : 'Unexpected response from the server');
   return data as T;
 }
 

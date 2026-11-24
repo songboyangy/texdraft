@@ -13,6 +13,7 @@ import { runMigrations } from './db/migrate.js';
 import { warmupTectonic } from './compile/warmup.js';
 import { describeSandbox, prepareUidSandboxDirs, sandboxKind } from './compile/sandbox.js';
 import { INTERRUPTED_RUN_ERROR, pruneEmptyCheckpoints } from './agent/checkpoint.js';
+import { userIdFromCookieHeader } from './lib/auth.js';
 import { HttpError } from './lib/http.js';
 import { PathError } from './lib/paths.js';
 import { agentRoutes } from './routes/agent.js';
@@ -130,7 +131,17 @@ if (quotaProviderName() !== 'builtin') app.log.info(`[ai] quota provider: ${quot
 if (process.env.SERVE_WEB === '1') {
   const { default: fastifyStatic } = await import('@fastify/static');
   const path = await import('node:path');
-  await app.register(fastifyStatic, { root: path.resolve(import.meta.dirname, '../../web/dist') });
+  const webRoot = path.resolve(import.meta.dirname, '../../web/dist');
+  await app.register(fastifyStatic, { root: webRoot });
+  // Product page at / for signed-out visitors (LANDING_PAGE, on by default with PUBLIC_DEMO); signed-in users get the app
+  if (config.demo.landingPage && fs.existsSync(path.join(webRoot, 'landing/index.html'))) {
+    app.log.info('[web] product page at / for signed-out visitors');
+    app.get('/', async (req, reply) => {
+      const signedIn = (await userIdFromCookieHeader(req.headers.cookie)) !== null;
+      reply.header('cache-control', 'no-cache').header('vary', 'Cookie');
+      return reply.sendFile(signedIn ? 'index.html' : 'landing/index.html', { cacheControl: false });
+    });
+  }
   app.setNotFoundHandler((req, reply) =>
     req.url.startsWith('/api') ? reply.status(404).send({ error: 'Not found' }) : reply.sendFile('index.html'),
   );

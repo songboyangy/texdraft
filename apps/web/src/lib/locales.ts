@@ -609,8 +609,8 @@ const zh = {
 
   // 连接本地 Agent（MCP）
   'agent.webTitle': '在 ChatGPT / Claude 网页版中使用（推荐）',
-  'agent.web1': '打开 ChatGPT 或 Claude 的设置，找到「应用 / 连接器（Connectors）」，添加一个自定义连接器（ChatGPT 需要先在高级设置里打开开发者模式）。',
-  'agent.web2': '连接地址填写：',
+  'agent.web1': 'ChatGPT：打开设置里的「插件」，添加一个自定义 MCP 连接器（看不到这个选项时，先在高级设置里打开开发者模式）。Claude：打开设置里的「连接器（Connectors）」，添加一个自定义连接器。',
+  'agent.web2': '在连接器的「连接」里填写 MCP 地址：',
   'agent.web3': '认证方式选择 OAuth，保存后会跳转到 TeXdraft，登录并点「允许」即可，不需要复制令牌。',
   'agent.web4': '在对话里启用这个连接器，然后直接用中文下达任务。',
   'agent.webExampleLabel': '例如：',
@@ -1309,8 +1309,8 @@ const en: Record<MessageKey, string> = {
   'history.restored': 'Restored; {count} files changed',
 
   'agent.webTitle': 'Use it in ChatGPT / Claude on the web (recommended)',
-  'agent.web1': 'Open ChatGPT or Claude settings, go to Apps / Connectors and add a custom connector (in ChatGPT, turn on developer mode in the advanced settings first).',
-  'agent.web2': 'Use this URL:',
+  'agent.web1': 'ChatGPT: open Plugins in settings and add a custom MCP connector (if the option is missing, turn on developer mode in the advanced settings first). Claude: open Connectors in settings and add a custom connector.',
+  'agent.web2': 'Under the connector\'s connection settings, enter this MCP URL:',
   'agent.web3': 'Choose OAuth. After saving you are sent to TeXdraft: sign in and click Allow. No token to copy.',
   'agent.web4': 'Enable the connector in a chat and give it a task in plain language.',
   'agent.webExampleLabel': 'For example:',

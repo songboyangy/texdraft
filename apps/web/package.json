@@ -11,7 +11,7 @@
     "pretypecheck": "node scripts/build-lezer.mjs",
     "typecheck": "tsc -p .",
     "pretest": "node scripts/build-lezer.mjs",
-    "test": "tsx test/completion.test.mts && tsx test/latex-language.test.mts && tsx test/word-count.test.mts"
+    "test": "tsx test/api.test.mts && tsx test/completion.test.mts && tsx test/latex-language.test.mts && tsx test/word-count.test.mts"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.4",

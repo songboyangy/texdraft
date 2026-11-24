@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { fetch as proxyFetch, ProxyAgent } from 'undici';
 import { and, eq, gt, lt, or } from 'drizzle-orm';
 import { config } from '../config.js';
 import { db, schema } from '../db/client.js';
@@ -14,6 +15,9 @@ const CODE_TTL_MS = 10 * 60 * 1000;
 /** 刷新令牌轮换后，旧令牌在这段时间内仍可用一次（客户端重试 / 并发刷新） */
 const REFRESH_GRACE_MS = 2 * 60 * 1000;
 const CIMD_TTL_MS = 60 * 60 * 1000;
+// Node versions before built-in environment proxy support need an explicit dispatcher.
+const cimdProxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
+const cimdProxyAgent = cimdProxyUrl ? new ProxyAgent(cimdProxyUrl) : undefined;
 
 export const ACCESS_PREFIX = 'tpa_';
 const REFRESH_PREFIX = 'tpr_';
@@ -135,7 +139,7 @@ async function fetchCimd(clientId: string): Promise<OAuthClient> {
   }
   let doc: Record<string, unknown>;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000), redirect: 'error', headers: { accept: 'application/json' } });
+    const res = await proxyFetch(url, { dispatcher: cimdProxyAgent, signal: AbortSignal.timeout(8000), redirect: 'error', headers: { accept: 'application/json' } });
     if (!res.ok) {
       throw new Error(
         res.status === 403 || res.status === 503

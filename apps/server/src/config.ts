@@ -71,6 +71,8 @@ export const config = {
     turnstileSecret: env('TURNSTILE_SECRET_KEY', ''),
     /** 新注册用户自动获得一份示例项目（中文短文 + 公式 + 参考文献） */
     sampleProject: flag('SAMPLE_PROJECT', demo ? 'true' : 'false'),
+    /** Signed-out visitors to / see the product page (web/dist/landing/) instead of the sign-in form */
+    landingPage: flag('LANDING_PAGE', demo ? 'true' : 'false'),
   },
   quota: {
     /** 每人最多拥有的项目数（0 = 不限；管理员不限） */
