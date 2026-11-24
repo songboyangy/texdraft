@@ -286,9 +286,13 @@ export type TransformEvent =
 // ---------- 文献 ----------
 
 export interface CitationSearchResult {
-  source: 'crossref' | 'arxiv';
-  /** Crossref 为 DOI，arXiv 为编号（不含版本） */
+  source: 'crossref' | 'arxiv' | 'openalex';
+  /** Crossref 为 DOI，arXiv 为编号（不含版本），OpenAlex 为作品 ID（W…） */
   id: string;
+  /** Times cited (Crossref / OpenAlex); used to rank the original paper above later reprints */
+  citedBy?: number;
+  /** arXiv id of an OpenAlex record (from its arXiv location or arXiv DOI) */
+  arxivId?: string;
   title: string;
   authors: string[];
   year?: number;

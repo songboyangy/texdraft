@@ -220,7 +220,7 @@ export function CitationDialog({
                     )}
                   </div>
                   <div className="cite-meta">
-                    <span className={`source-badge ${r.source}`}>{r.source === 'arxiv' ? 'arXiv' : 'Crossref'}</span>
+                    <span className={`source-badge ${r.source}`}>{r.source === 'arxiv' ? 'arXiv' : r.source === 'openalex' ? 'OpenAlex' : 'Crossref'}</span>
                     {r.year && <span>{r.year}</span>}
                     {r.authors.length > 0 && <span>{authorsLine(r.authors, t('cite.etAl'))}</span>}
                     {r.venue && r.source !== 'arxiv' && <span className="cite-venue">{r.venue}</span>}

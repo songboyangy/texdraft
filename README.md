@@ -62,7 +62,7 @@ Open source under the AGPL and self-hosted with one Docker command. Your papers 
   - Full Chinese / CJK support
   - Errors you can click to jump to the source
   - PDF preview with two-way SyncTeX
-- **References**: search Crossref and arXiv, and verified BibTeX is written into your `.bib`. The agent is told never to invent a citation.
+- **References**: search Crossref, arXiv and OpenAlex (which covers NeurIPS, ICLR and other conference papers without a DOI), and verified BibTeX is written into your `.bib`. The agent is told never to invent a citation.
 - **Selection AI**: select text to polish, translate, shorten, expand, fix grammar or explain it, or give your own instruction.
 - **History**: version history with per-file diffs and restore, plus automatic snapshots.
 - **Import and export**: drag a zip exported from Overleaf or GitHub into the upload dialog, and export any project as a zip.

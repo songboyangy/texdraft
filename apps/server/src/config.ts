@@ -94,6 +94,11 @@ export const config = {
   databaseUrl: env('DATABASE_URL', 'postgres://texdraft@127.0.0.1:5433/texdraft'),
   sessionSecret: secret,
   dataDir,
+  citations: {
+    /** OpenAlex works without a key; a key or contact email raises its rate limits */
+    openalexApiKey: env('OPENALEX_API_KEY', ''),
+    openalexEmail: env('OPENALEX_EMAIL', ''),
+  },
   compile: {
     runner: env('COMPILE_RUNNER', 'local-tectonic') as 'local-tectonic' | 'local-latexmk' | 'docker',
     timeoutMs: Number(env('COMPILE_TIMEOUT_MS', '90000')),

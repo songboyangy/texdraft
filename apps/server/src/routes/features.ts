@@ -24,7 +24,7 @@ const TransformBody = z.object({
 });
 
 const CitationBody = z.object({
-  source: z.enum(['crossref', 'arxiv']),
+  source: z.enum(['crossref', 'arxiv', 'openalex']),
   id: z.string().min(3).max(300),
   title: z.string().max(1000),
   authors: z.array(z.string().max(300)).max(500),
@@ -32,6 +32,10 @@ const CitationBody = z.object({
   venue: z.string().max(500).optional(),
   doi: z.string().max(300).optional(),
   category: z.string().max(50).optional(),
+  type: z.string().max(50).optional(),
+  url: z.string().max(500).optional(),
+  arxivId: z.string().max(50).optional(),
+  citedBy: z.number().int().nonnegative().optional(),
 });
 
 export async function featureRoutes(app: FastifyInstance) {

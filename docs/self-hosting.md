@@ -63,6 +63,7 @@ All settings are environment variables (see [.env.example](../.env.example)).
 | `SOURCE_URL` | — | Source-code link in the UI (AGPL) |
 | `DEMO_NOTICE` | `default` in demo mode | Floating demo notice; `off` hides it |
 | `LANDING_PAGE` | `true` in demo mode, else `false` | Show the product page (`apps/web/public/landing/`) to signed-out visitors at `/`; signed-in users go straight to their projects. Needs `SERVE_WEB=1` |
+| `OPENALEX_API_KEY` / `OPENALEX_EMAIL` | — | Optional: raise OpenAlex rate limits for reference search (it works without either) |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | — | Cloudflare Turnstile check on sign-up |
 | `MAX_PROJECTS_PER_USER` / `MAX_PROJECT_BYTES` / `REGISTRATIONS_PER_IP_PER_DAY` / `COMPILES_PER_MINUTE` | `0` (demo: `20` / `100 MB` / `3` / `10`) | Abuse limits (0 = unlimited; admins are exempt from per-user limits) |
 | `COMPILE_CONCURRENCY` | CPU cores | Concurrent compiles; extra requests queue and the editor shows their position |

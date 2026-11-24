@@ -702,6 +702,7 @@ button.cite-row { cursor: pointer; }
 .source-badge { font-size: 10.5px; font-weight: 600; padding: 0 6px; border-radius: 4px; letter-spacing: 0.02em; }
 .source-badge.arxiv { background: #fdecec; color: #b31b1b; }
 .source-badge.crossref { background: #e8f1fb; color: #1f5fa8; }
+.source-badge.openalex { background: #fdf3e2; color: #a2570b; }
 .notice { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--r); background: var(--warning-soft); color: #7a4b00; font-size: 13px; border: 1px solid #f3dca2; }
 
 /* =====================================================================

@@ -92,8 +92,12 @@ const coreDefs: ToolDef[] = CORE_TOOLS.map((t) => ({
 
 // ---------------- 项目、编译结果与文献 ----------------
 
+const citeId = (r: CitationSearchResult) =>
+  r.source === 'arxiv' ? `arXiv:${r.id}` : r.source === 'crossref' ? `doi:${r.id}` : r.doi ? `doi:${r.doi}` : r.arxivId ? `arXiv:${r.arxivId}` : `openalex:${r.id}`;
+const citedCount = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(n));
 const citeLine = (r: CitationSearchResult, i: number) =>
-  `[${i}] ${r.title} — ${r.authors.slice(0, 3).join(', ')}${r.authors.length > 3 ? ' et al.' : ''} (${r.year ?? 'n.d.'}) ${r.source === 'arxiv' ? `arXiv:${r.id}` : `doi:${r.id}`}`;
+  `[${i}] ${r.title} — ${r.authors.slice(0, 3).join(', ')}${r.authors.length > 3 ? ' et al.' : ''} (${r.year ?? 'n.d.'})` +
+  `${r.venue && r.source !== 'arxiv' ? ` · ${r.venue}` : ''}${r.citedBy ? ` · cited ${citedCount(r.citedBy)}` : ''} · ${citeId(r)}`;
 
 const projectDefs: ToolDef[] = [
   {
@@ -156,7 +160,7 @@ const projectDefs: ToolDef[] = [
   {
     ...base('search_citations', 'Search references'),
     description:
-      'Search Crossref (journal/conference papers) and arXiv (preprints) for references. Accepts a title, keywords, a DOI or an arXiv id. Returns candidates with an index to pass to add_citation.',
+      'Search Crossref (journal/conference papers), arXiv (preprints) and OpenAlex (conference papers without a DOI such as NeurIPS/ICLR, with citation counts) for references. Accepts a title, keywords, a DOI or an arXiv id. Returns candidates with an index to pass to add_citation. Check that the authors and year match the paper you mean before adding it.',
     inputSchema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'], additionalProperties: false },
     scope: 'project',
     summarize: (i) => String(i.query ?? ''),
@@ -164,7 +168,12 @@ const projectDefs: ToolDef[] = [
       const q = String(i.query ?? '');
       const { results, errors } = await searchOnline(q);
       ctx.cache.set(`cite:${q}`, results);
-      return (results.map(citeLine).join('\n') || 'No results.') + (errors.length ? `\n(some sources failed: ${errors.join('; ')})` : '');
+      return (
+        (results.map(citeLine).join('\n') || 'No results.') +
+        (errors.length
+          ? `\n(some sources failed: ${errors.join('; ')}. Results may be incomplete: if the paper you mean is missing or only appears as a later reprint, search again in a few seconds or by its DOI / arXiv id.)`
+          : '')
+      );
     },
   },
   {
